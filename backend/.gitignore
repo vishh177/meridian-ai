@@ -1,3 +1,5 @@
-.env
-__pycache__
-*.pyc
+frontend/.git
+backend/.env
+backend/__pycache__
+backend/*.pyc
+node_modules
