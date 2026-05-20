@@ -10,6 +10,7 @@ from technical import get_technical_analysis
 from lstm import run_lstm_prediction
 from finbert import get_finbert_score
 from sec_edgar import get_sec_analysis
+from backtest import run_backtest
 
 load_dotenv()
 
@@ -221,5 +222,14 @@ Keep responses under 150 words."""
         )
 
         return {"response": response.choices[0].message.content}
+    except Exception as e:
+        return {"error": str(e)}
+@app.post("/backtest")
+def backtest(data: dict):
+    try:
+        ticker = data["ticker"].upper()
+        period = data.get("period", "6mo")
+        result = run_backtest(ticker, period)
+        return result
     except Exception as e:
         return {"error": str(e)}
