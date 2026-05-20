@@ -180,3 +180,46 @@ def compare_stocks(data: dict):
         }
     except Exception as e:
         return {"error": str(e)}
+@app.post("/chat")
+def chat(data: dict):
+    try:
+        message = data["message"]
+        context = data.get("context", {})
+        history = data.get("history", [])
+
+        system_prompt = f"""You are MERIDIAN, an AI investment research assistant. 
+You have just completed a full analysis of {context.get('ticker', 'a stock')}.
+
+Here is the analysis context:
+- Current Price: ${context.get('price')}
+- Verdict: {context.get('verdict')}
+- Confidence: {context.get('confidence')}%
+- Fundamental Score: {context.get('fundamental_score')}/100
+- Sentiment Score: {context.get('sentiment_score')}/100
+- Technical Score: {context.get('technical_score')}/100
+- RSI: {context.get('rsi')} ({context.get('rsi_signal')})
+- Trend: {context.get('trend')}
+- LSTM 7-day prediction: {context.get('lstm_change')}%
+- Bull case: {context.get('bull_case')}
+- Bear case: {context.get('bear_case')}
+- SEC Filing Score: {context.get('sec_score')}/100
+- Management Tone: {context.get('management_tone')}
+
+Answer questions about this stock analysis clearly and concisely.
+Be direct. Use specific numbers from the analysis.
+Never make up data not in the context.
+Keep responses under 150 words."""
+
+        messages = [{"role": "system", "content": system_prompt}]
+        for h in history:
+            messages.append(h)
+        messages.append({"role": "user", "content": message})
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages
+        )
+
+        return {"response": response.choices[0].message.content}
+    except Exception as e:
+        return {"error": str(e)}
